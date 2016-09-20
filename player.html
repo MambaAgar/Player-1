@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Player</title>
+  <link rel="stylesheet" href="css/player.css" />
+  <script src="js/jquery-1.10.2.min.js"></script>
+  <script src="js/player.js"></script>
+</head>
+<body>
+	<input id="selFile" type="file" style="display:none" webkitdirectory directory
+		mozdirectory />
+	<div id="container">
+		<!-- 控制台 -->
+		<div id="control">
+			<div id="title">&nbsp;</div>
+			<div id="ctrlContainer">
+				<div id="pri"></div>
+				<div id="play"></div>
+				<div id="next"></div>
+				<div id="random"></div>
+				<div id="vol"></div>
+				<div id="volAdjust">
+					<div id="hintWord">
+						<span id="volMinus">&nbsp;-</span>
+						<span id="volAdd">+</span>
+					</div>
+					<div id="volDefault">
+						<div id="volControl"></div>
+					</div>
+				</div>
+				<div style="clear: both;"></div>
+			</div>
+			<!-- 進度條 -->
+			<div id="defaultBar">
+				<div id="progressBar"></div>
+			</div>
+		</div>
+		<!-- 工具列 -->
+		<div id="toolbar">
+			<div id="addFolder">+</div>
+		</div>
+		<!-- 音訊檔列表 -->
+		<div id="fileList">
+			<ul id="fList"></ul>
+		</div>
+	</div>
+	<!-- 定義消息層 -->
+	<div id="msg"></div>
+</body>
+<script charset="utf-8">
+	$(document).ready(function(){
+		//鎖定檔案按鈕
+		$("#selFile").bind("change", selFile);
+		$("#addFolder").bind("click", function() {
+		  $("#selFile").click();
+		});
+		//初始化player，鎖定播放控制按鈕
+		bindPlayer();
+		//鎖定音量調整
+		bindVolAdjust();
+		//鎖定播放錯誤處理
+		bindPlayError();
+		//鎖定播放進度條
+		bindProgress();
+		//鎖定歌曲播放完
+		bindEnd();
+	});
+	//建立物件的URL位址
+	function createURL (obj) {
+	  var url = null;
+	  if(window.createObjectURL){
+		url = window.createObjectURL(obj);
+	  }else if(window.createBlobURL){
+		url = window.createBlobURL(obj);
+	  }else if(window.URL && window.URL.createObjectURL){
+		url = window.URL.createObjectURL(obj);
+	  }else if(window.webkitURL && window.webkitURL.createObjectURL){
+		url = window.webkitURL.createObjectURL(obj);
+	  }
+	  return url;
+	}
+	//顯示提示消息
+	function showMsg(msg){
+		var ww = $(document).width(); 
+		var wh = $(document).height();
+		var dmsg = $("#msg");
+		dmsg.text(msg);
+		dmsg.css("left", (ww - 170) * 0.5);
+		dmsg.css("top", (wh - 170) * 0.5);
+		$("#msg").fadeIn(500, function(){
+			$(this).fadeOut(3000);
+		});		    
+	}
+	//讀取目錄中檔案
+	function selFile () {
+	  var fs = $("#selFile")[0].files;
+	  if(fs.length > 0){
+		$("#fList").empty();
+		//清空播放對象清單
+		Player.clearList();
+		//記錄當前可播放檔案編號
+		var idxs = 0;
+		//迴圈陣列中所有檔案，把檔案新增到播放清單中
+		for (var i=0; i < fs.length; i++) {
+			var f = fs[i];
+			//檢測是否為音樂檔
+			if(f.name.match(/(.mp3|.ogg|.wma|.ape)$/)){
+				var li = $("<li id='" + (idxs++) + "'>" + f.name + "</li>");
+				//按兩下播放
+				li.bind("dblclick", function () {
+				  playMusic($(this).attr("id"));
+				});
+				//建立檔案播放url
+				var fURL = createURL(f);
+				//放到播放檔集合中
+				Player.add(f.name, fURL);
+				$("#fList").append(li);
+			}
+		}
+		//如果歌曲列表不為空，則設定第一首歌是當前播放歌曲
+		if(!Player.isEmptyPlayList()){
+			Player.currentId = 0;
+		}
+	  }
+	}
+	//播放檔案
+	function playMusic (index) {
+	  var song = Player.play(index);
+	  setMusicClass(song);
+	}
+	//設定當前播放歌曲選取的樣式
+	function setMusicClass (song) {
+	  if(song != null){
+		//設定標題
+		$("#title").text(song.name);
+		//設定播放按鈕變暫停圖示
+		$("#play").css("background-image", "url(img/pause.png)");
+		//還原上次被選取的樣式
+		$("#fList li").removeClass('selSong');
+		//設定選取歌曲文字樣式
+		$("#fList li[id=" + Player.currentId + "]").addClass("selSong");
+		//設定捲軸位置
+		var scrollHeight = $("#fileList")[0].scrollHeight;
+		var tmpHeight = Math.floor(scrollHeight / Player.playList.length * Player.currentId);
+		$("#fileList").animate({"scrollTop":  tmpHeight - 100});
+	  }
+	}
+	//停止播放
+	function stop () {
+		Player.stop();
+		//設定播放按鈕變播放圖示
+		$("#play").css("background-image", "url(img/play.png)");	  
+	}
+	//鎖定播放處理錯誤事件
+	function bindPlayError () {
+	  var audio = $(Player.audioObj);
+	  //處理錯誤事件
+	  var errMsg = ["資料讀取失敗！", "網路故障！", "解碼失敗！", "不支援的格式！"];
+	  audio.bind("error", function() {
+		showMsg(errMsg[this.error.code - 1]);
+	  })
+	}
+	//鎖定進度條事件
+	function bindProgress () {
+	  var audio = $(Player.audioObj);
+	  //鎖定進度條拖動
+	  $("#defaultBar").bind('mousedown', function(e) {
+		var srcEle = e.srcElement;
+		e.preventDefault();
+		//如果是進度條控制按鈕
+		//if (srcEle.id == "progressBar") {
+			var x = e.pageX;
+			//取得相對父座標的X
+			var pX = $("#defaultBar").position().left;
+			//取得進度條寬度
+			var pWidth = $("#defaultBar").width();
+			//鎖定mousemove移動事件
+			$(document).bind('mousemove', function(e) {
+				if(!audio[0].paused){
+					e.preventDefault();
+					//取得滑鼠偏移大小
+					var xOff = e.pageX - x;
+					var nX = (pX + xOff);
+					nX = (nX <= 0) ? pWidth : nX;
+					nX = (nX > pWidth) ? pWidth : nX;
+					//設定音樂播放時間
+					audio[0].currentTime = audio[0].duration * (nX / pWidth);
+				}
+			});
+			//鎖定滑鼠按起事件
+			$(document).bind("mouseup", function(e){
+				$(document).unbind("mousemove");
+			})
+		//}
+	  })
+	  //鎖定timeupdate事件，音訊播放時間改變時觸發
+	  audio.bind("timeupdate", function() {
+		var cTime = this.currentTime, tTime = this.duration;
+		//設定內部捲軸長度
+		setCurrentTime(cTime, tTime);
+	  })
+	}
+	//設定播放進度條，cTime表示當前音樂時間，tTime表示音樂總時間
+	function setCurrentTime (cTime, tTime) {
+	  var per = (tTime <= 0) ? 0 : (cTime / tTime);
+	  var pPos = $("#defaultBar").width() * per;
+	  $("#progressBar").width(pPos);
+	}
+	//初始化player，鎖定播放控制按鈕
+	function bindPlayer () {
+	  Player.init();
+	  //鎖定播放下一首按鈕
+	  $("#next").click(function(){
+		var song = Player.playNext();
+		setMusicClass(song);
+	  });
+	  //鎖定播放上一首按鈕
+	  $("#pri").click(function(){
+		var song = Player.playPri();
+		setMusicClass(song);
+	  });
+	  //鎖定隨機播放按鈕
+	  $("#random").click(function(){
+		if (Player.isRandom) {
+			Player.isRandom = false;
+			$("#random").css("background-image", "url(img/random.png)");
+		} else {
+			Player.isRandom = true;
+			//設定隨機播放按鈕按下圖示
+			$("#random").css("background-image", "url(img/clickRandom.png)");
+		}
+	  });
+	  //鎖定播放按鈕
+	  $("#play").click(function(){
+		//如果歌曲列表為空
+		if(Player.isEmptyPlayList()){
+			showMsg("請新增歌曲！");
+			return;
+		}
+		//歌曲處於暫停狀態
+		if(Player.audioObj.paused){
+			playMusic(Player.currentId);
+		}else{	//歌曲處於播放狀態
+			stop();
+		}
+	  });
+	}
+	//鎖定歌曲播放完
+	function bindEnd(){
+		var audio = $(Player.audioObj);
+		//鎖定ended事件，音訊播放完時觸發
+		audio.bind("ended", function() {
+			var song;
+			if (Player.isRandom) {
+				song = Player.playRandom();
+			} else {
+				song = Player.playNext();
+			}
+			setMusicClass(song);
+		});
+	}
+	//鎖定音量調整
+	function bindVolAdjust(){
+		var audio = $(Player.audioObj);
+		var tWidth = $("#volDefault").width();
+		//鎖定音量+按鈕
+		$("#volAdd").click(function(){
+			var tVolume = audio[0].volume + 0.1;
+			tVolume = (tVolume >= 1) ? 1 : tVolume;
+			audio[0].volume = tVolume;
+			$("#volControl").width(tVolume * tWidth);
+		});
+		//鎖定音量-按鈕
+		$("#volMinus").click(function(){
+			var tVolume = audio[0].volume - 0.1;
+			tVolume = (tVolume <= 0) ? 0 : tVolume;
+			audio[0].volume = tVolume;
+			$("#volControl").width(tVolume * tWidth);
+		});
+	}
+</script>
+</html>

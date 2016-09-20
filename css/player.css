@@ -1,0 +1,146 @@
+body{
+	width: 600px;
+	margin: 10px auto;
+	border: 3px solid rgb(163, 70, 255);
+	border-radius: 10px;
+}
+
+#container, #ctrlContainer{
+	display: block;
+}
+
+#control{
+	margin: 5px auto;
+}
+
+#title{
+	margin: 10px;
+	font-weight: bold;
+}
+
+#pri{
+	float: left;
+	width: 50px;
+	height: 50px;
+	padding: 4px;
+	margin-left: 10px;
+	background-image: url(../img/pri.png);
+	background-repeat: no-repeat;
+	cursor: pointer;
+}
+
+#play{
+	float: left;
+	width: 50px;
+	height: 50px;
+	padding: 4px;
+	background-image: url(../img/play.png);
+	background-repeat: no-repeat;
+	cursor: pointer;
+}
+
+#next{
+	float: left;
+	width: 50px;
+	height: 50px;
+	padding: 4px;
+	background-image: url(../img/next.png);
+	background-repeat: no-repeat;
+	cursor: pointer;
+}
+
+#random{
+	float: left;
+	width: 50px;
+	height: 50px;
+	padding: 4px;
+	background-image: url(../img/random.png);
+	background-repeat: no-repeat;
+	cursor: pointer;
+}
+
+#vol{
+	float: left;
+	width: 50px;
+	height: 50px;
+	padding: 4px;
+	margin-left: 180px;
+	background-image: url(../img/vol2.png);
+	background-repeat: no-repeat;
+}
+
+#volAdjust{
+	float: left;
+	width: 100px;
+	margin-left: 8px;
+	margin-top: 25px;
+}
+
+#hintWord{
+	font-weight: bold;
+	font-size: xx-small;
+}
+
+#volMinus{
+	float: left;
+	width: 10px;
+	cursor: pointer;
+}
+
+#volAdd{
+	float: left;
+	width: 10px;
+	margin-left: 80px;
+	cursor: pointer;
+}
+
+#volDefault{
+	float: left;
+	height: 14px;
+	width: 100px;
+	background: grey;
+}
+
+#volControl{
+	float: left;
+	height: 14px;
+	width: 10px;
+	background: rgb(66, 157, 240);
+}
+
+#defaultBar{
+	width: 580px;
+	margin-left: 10px;
+	height: 16px;
+	background: grey;
+}
+
+#progressBar{
+	width: 0px;
+	height: 16px;
+	background: blue;
+}
+
+#fileList{
+	height: 300px;
+	max-height: 300px;
+	overflow-y: auto;
+	margin-bottom: 15px;
+}
+
+#addFolder{
+	margin-top: 15px;
+	background: rgb(163, 70, 255);
+	text-indent: 10px;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+ul{
+	list-style-type:none;
+	cursor: pointer;
+}
+
+.selSong{
+	background: pink;
+}
