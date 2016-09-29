@@ -47,6 +47,7 @@ var Player = {
             
             this.audioObj.ontimeupdate = function() {
                 gVar.currTime.text(formatTime(this.currentTime));
+				setProgressBar(this.currentTime, this.duration);
             };
             
             this.audioObj.onended = function() {
@@ -91,5 +92,9 @@ var Player = {
         var length = this.playList.length;
         var randomNum = Math.floor(Math.random() * length);
         this.play(randomNum);
-    }
+    },
+	//調整音量
+	adjustVolume: function(value) {
+		this.audioObj.volume = value;
+	}
 };

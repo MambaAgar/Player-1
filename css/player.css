@@ -13,19 +13,19 @@ img {
 }
 
 #wrapper {
-    border: 2px solid purple;
+    border: 2px solid #999;
     border-radius: 10px;
     height: 550px;
     margin: 20px auto;
     width: 650px;
 }
 
-#wrapper div {
-    margin-left: 5px;
-}
-
 #header {
     margin: 10px;
+}
+
+#btns {
+	margin-left: 10px;
 }
 
 #btns span, 
@@ -47,7 +47,7 @@ img {
 }
 
 .btn:hover {
-    background-color: #E6E6FA;
+    background-color: #EEE;
     cursor: pointer;
 }
 
@@ -81,17 +81,6 @@ img {
     width: 200px;
     -webkit-appearance: none;
 }
-
-/*#tooltip {
-   display: none;
-   font-size: 9px;
-   height: 15px;
-   padding: 2px;
-   position: relative;
-   text-align: center;
-   top: -15px;
-   width: 30px;
-}*/
 
 #vol-slider::-webkit-slider-runnable-track {
     background: #ddd;
@@ -188,10 +177,38 @@ img {
   border: 2px solid #555;
 }
 
-#song-progressbar {
+#tooltip {
+   border-radius: 6px;
+   font-size: 9px;
+   height: 15px;
+   position: relative;
+   text-align: center;
+   top: -15px;
+   width: 35px;
+}
+
+#tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-color: #CCC transparent transparent transparent;
+}
+
+#song-progress {
+	background-color: #E9E9E9;
+	cursor: pointer;
     height: 20px;
     margin: 10px;
     width: 97%;
+}
+
+#song-bar {
+	background-color: #CCC;
+	height: 20px;
+	width: 0;
 }
 
 #song-time {
@@ -201,7 +218,6 @@ img {
 }
 
 #content {
-    /*border: 1px solid blue;*/
     height: 300px;
     margin: 10px;
     max-height: 300px;

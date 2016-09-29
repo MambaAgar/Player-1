@@ -17,16 +17,18 @@
                 <span id="next" class="btn">&nbsp;</span>
                 <span id="shuffle" class="btn">&nbsp;</span>
                 <div id="vol">&nbsp;</div>
-                <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.1" />
-                <!-- <div id="tooltip">&nbsp;</div> -->
+                <input type="range" id="vol-slider" min="0" max="1" step="0.01" value="0.1" />
+				<div id="tooltip">&nbsp;</div>
             </div>
-            <div id="song-progressbar">&nbsp;</div>
+            <div id="song-progress">
+				<div id="song-bar">&nbsp;</div>
+			</div>
             <div id="song-time">
                 <span id="curr-time">00:00</span>
                 /
                 <span id="total-time">00:00</span>
             </div>
-            <div id="content"> </div>
+            <div id="content">&nbsp;</div>
             <div id="footer">
                 &copy;
                 <span id="year">&nbsp;</span>
@@ -38,14 +40,16 @@
         <script src="js/player.js"></script>
         <script>
             var gVar = {
-                content: $("#content"),
-                currTime: $("#curr-time"),
-                header: $("#header"),
-                play: $("#play"),
-                selectFile: $("#select-file"),
-                //tooltip: $("#tooltip"),
-                totalTime: $("#total-time"),
-                volSlider: $("#vol-slider")
+				content: $("#content"),
+				currTime: $("#curr-time"),
+				header: $("#header"),
+				play: $("#play"),
+				progressWidth: $("#song-progress").width(),
+				selectFile: $("#select-file"),
+				songBar: $("#song-bar"),
+				tooltip: $("#tooltip"),
+				totalTime: $("#total-time"),
+				volSlider: $("#vol-slider")
             };
             
             function formatTime(secs) {         
@@ -98,10 +102,12 @@
                     gVar.play.css("background-position", "-144px 0");
                 }
             }
-            
-            $("#song-progressbar").progressbar({
-                    
-            });
+			
+			//設定播放進度條，cTime表示當前音樂時間，tTime表示音樂總時間
+			function setProgressBar(cTime, tTime) {
+				var width = gVar.progressWidth * (cTime / tTime);
+				gVar.songBar.width(width);
+			}
             
             $("#file-open").click(function() {
                 gVar.selectFile.click();
@@ -161,6 +167,14 @@
                     this.style.backgroundColor = "#E7F3F8";
                 }
             });
+			
+			$("#song-progress").mousemove(function(event) {
+				//按下滑鼠左鍵並移動時觸發
+				if (event.which === 1 && hasSongs() && !Player.audioObj.paused) {
+					Player.audioObj.currentTime = Player.audioObj.duration * (event.offsetX / gVar.progressWidth);
+					gVar.songBar.width(event.offsetX);
+                }
+			});
         
             $("body").on("dblclick", ".songs", function() {
                 var index = parseInt(this.id.split("-")[1]);
@@ -168,27 +182,25 @@
                 isPaused();
                 Player.play(index);
             });
-            
-            gVar.volSlider.mouseenter(function() {
-                //var value = gVar.volSlider.val() * 100;
-                //gVar.tooltip.text(value).css("background-color", "#CCC").show();
-            });
-            
-            gVar.volSlider.mousedown(function() {
-                
-            });
-            
-            gVar.volSlider.change(function() {
-                //gVar.tooltip.attr("content", this.value).show();
-                //console.log(this.value);
-                //gVar.tooltip.text(this.value).fadeIn(500, function() {
-                //    $(this).fadeOut(3000);
-                //});
-            });
-        
+			
+			gVar.volSlider.on("change mousemove", function(event) {
+				Player.adjustVolume(this.value);
+				gVar.tooltip.text(parseInt(this.value * 100))
+					.css({
+						"background-color": "#CCC",
+						"left": event.offsetX - 150
+					});
+				document.styleSheets[0].addRule("#tooltip::after","border-style: solid;");
+			});
+			
+			gVar.volSlider.on("mouseleave", function() {
+				gVar.tooltip.text("").css("background-color", "#FFF");
+				document.styleSheets[0].addRule("#tooltip::after","border-style: none;");
+			});
+						
             $(function() {
-                
-                $("#year").text(new Date().getFullYear());
+				var year = new Date().getFullYear();
+                $("#year").text("2015 - " + year);
                 
                 Player.init();
             });
