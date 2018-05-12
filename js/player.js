@@ -16,7 +16,7 @@ var Player = {
     },
     //新增音樂
     add: function(name, url) {
-        this.playList.push({"name":name, "url":url});
+        this.playList.push({"name":name, "/uzi.mp3":url});
     },
     //清空播放清單
     clear: function() {
