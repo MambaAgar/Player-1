@@ -20,7 +20,7 @@ var Player = {
     },
     //清空播放清單
     clear: function() {
-        this.playList.length = 0;
+        this.playList.length = 1;
         this.currentId = -1;
     },
     //播放音樂
